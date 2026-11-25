@@ -1,3 +1,4 @@
+# Modified by Surendra, 2026: authors, URLs, and license files. See NOTICE.
 [build-system]
 requires = ["setuptools>=77.0.3", "wheel"]
 build-backend = "setuptools.build_meta"
@@ -9,9 +10,11 @@ description = "Low-latency speech-to-speech pipeline"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
-license-files = ["LICENSE"]
+license-files = ["LICENSE", "NOTICE"]
 authors = [
     { name = "Hugging Face" },
+    { name = "George Kintu" },
+    { name = "Surendra" },
 ]
 keywords = ["speech-to-speech", "voice-agents", "speech-recognition", "text-to-speech", "openai"]
 classifiers = [
@@ -93,9 +96,10 @@ whisper-mlx = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/huggingface/speech-to-speech"
-Repository = "https://github.com/huggingface/speech-to-speech"
-Issues = "https://github.com/huggingface/speech-to-speech/issues"
+Homepage = "https://github.com/SURISURENDRA18/Speech-to-Speech-Voice-Model"
+Repository = "https://github.com/SURISURENDRA18/Speech-to-Speech-Voice-Model"
+Issues = "https://github.com/SURISURENDRA18/Speech-to-Speech-Voice-Model/issues"
+Upstream = "https://github.com/huggingface/speech-to-speech"
 
 [project.scripts]
 speech-to-speech = "speech_to_speech.cli:main"

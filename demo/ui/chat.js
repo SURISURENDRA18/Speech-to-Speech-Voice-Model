@@ -1,4 +1,5 @@
 // @ts-check
+// Modified by Surendra, 2026: removed the camera tool. See NOTICE.
 /**
  * ChatView — owns the whole conversation surface: the slide-in history panel,
  * the ephemeral on-orb bubbles, and all the transcript/tool/streaming

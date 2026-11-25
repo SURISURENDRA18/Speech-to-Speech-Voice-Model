@@ -1,4 +1,5 @@
 // @ts-check
+// Modified by Surendra, 2026: removed camera tool references from comments. See NOTICE.
 /**
  * Minimal WebSocket client for the Hugging Face speech-to-speech load balancer.
  *

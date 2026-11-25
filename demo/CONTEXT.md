@@ -1,3 +1,5 @@
+<!-- Modified by Surendra, 2026: removed the camera tool. See NOTICE. -->
+
 # Context glossary
 
 Canonical terms for this space. A glossary, not a spec — it defines what words mean,

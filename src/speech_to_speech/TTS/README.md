@@ -1,3 +1,5 @@
+<!-- Modified by Surendra, 2026: removed the link to archived models. See NOTICE. -->
+
 # TTS Summary
 
 ## Available TTS modes (`--tts`)
@@ -9,8 +11,6 @@ Runtime-supported values in `s2s_pipeline.py`:
 - `pocket` → `pocket_tts_handler.py`
 - `kokoro` → `kokoro_handler.py`
 - `qwen3` → `qwen3_tts_handler.py`
-
-Deprecated TTS implementations, including MeloTTS, live in [`../../../archive/TTS`](../../../archive/TTS) and are no longer wired into `s2s_pipeline.py`.
 
 ## Usage
 

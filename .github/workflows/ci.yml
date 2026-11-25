@@ -1,9 +1,13 @@
+# Modified by Surendra, 2026: pinned Python 3.11 and replaced the retired macOS runner. See NOTICE.
 name: CI
 
 on:
   push:
     branches: [main]
   pull_request:
+
+env:
+  UV_PYTHON: "3.11"
 
 jobs:
   ruff:
@@ -71,7 +75,7 @@ jobs:
           - label: linux
             os: ubuntu-latest
           - label: macos-arm64
-            os: macos-14
+            os: macos-15
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7.0.0

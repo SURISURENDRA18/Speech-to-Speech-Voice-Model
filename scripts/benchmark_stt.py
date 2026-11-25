@@ -1,3 +1,4 @@
+# Modified by Surendra, 2026: removed the moonshine option. See NOTICE.
 """
 STT Benchmarking Script
 
@@ -175,14 +176,6 @@ def benchmark_handler(
                 queue_in=queue_in,
                 queue_out=queue_out,
                 setup_kwargs=setup_kwargs
-            )
-
-        elif handler_name == "moonshine":
-            from archive.STT.moonshine_handler import MoonshineSTTHandler
-            handler = MoonshineSTTHandler(
-                stop_event,
-                queue_in=queue_in,
-                queue_out=queue_out,
             )
 
         elif handler_name == "parakeet-tdt":
