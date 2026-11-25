@@ -1,0 +1,50 @@
+Local Realtime Voice Agent (Speech-to-Speech Voice Model)
+Copyright 2026 Surendra (https://github.com/SURISURENDRA18)
+
+This product is licensed under the Apache License, Version 2.0.
+See the LICENSE file for the full license text.
+
+-------------------------------------------------------------------------------
+Attribution
+-------------------------------------------------------------------------------
+
+This is a modified version of earlier open-source work. The copyright in that
+work remains with its authors.
+
+1. speech-to-speech
+   Copyright 2024 The HuggingFace Inc. team
+   https://github.com/huggingface/speech-to-speech
+   Licensed under the Apache License, Version 2.0.
+   Provides the speech pipeline, the OpenAI Realtime-compatible server, and the
+   browser demo. The demo UI is credited upstream to
+   amir-tfrere/minimal-conversation-app-s2s-backend (Pollen Robotics and
+   Hugging Face).
+
+2. hf-speech-to-speech
+   George Kintu
+   https://github.com/gkintu/hf-speech-to-speech
+   Licensed under the Apache License, Version 2.0.
+   The direct base of this repository. Provides the Linux/NVIDIA local stack,
+   including scripts/local_stack.sh, its configuration, and the voice picker.
+
+-------------------------------------------------------------------------------
+Changes made in this repository
+-------------------------------------------------------------------------------
+
+Changes relative to gkintu/hf-speech-to-speech:
+
+- Added scripts/run_mac.py, a launcher for Apple Silicon Macs.
+- Removed the camera tool from the browser demo, and changed the header credit,
+  links, and About panel. Files changed: demo/CONTEXT.md, demo/README.md,
+  demo/index.html, demo/main.js, demo/style.css, demo/ui/chat.js,
+  demo/rtc/s2s-rtc-client.js, demo/ws/s2s-ws-client.js.
+- Rewrote README.md, and added this NOTICE file and media/voice-agent-ui.png.
+- Updated the authors, URLs, and license files in pyproject.toml.
+- Removed logo.png.
+
+-------------------------------------------------------------------------------
+Models
+-------------------------------------------------------------------------------
+
+No model weights are distributed with this repository. Each model is downloaded
+from its publisher and is covered by that publisher's license.

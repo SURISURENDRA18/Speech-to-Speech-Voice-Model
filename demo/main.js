@@ -1,4 +1,5 @@
 // @ts-check
+// Modified by Surendra, 2026: removed the camera tool. See NOTICE.
 /**
  * Minimal voice conversation app, talking to a Hugging Face speech-to-speech
  * backend over **WebSocket** or **WebRTC**.

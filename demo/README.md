@@ -11,6 +11,8 @@ hf_oauth: true
 hf_oauth_expiration_minutes: 10080
 ---
 
+<!-- Modified by Surendra, 2026: removed the camera tool. See NOTICE. -->
+
 # Realtime Voice Demo
 
 Browser voice-chat UI for the

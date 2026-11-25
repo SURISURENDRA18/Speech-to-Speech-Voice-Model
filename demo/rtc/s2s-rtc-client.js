@@ -1,4 +1,5 @@
 // @ts-check
+// Modified by Surendra, 2026: removed camera tool references from comments. See NOTICE.
 /**
  * Minimal WebRTC client for a speech-to-speech realtime endpoint.
  *
