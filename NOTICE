@@ -40,6 +40,8 @@ Changes relative to gkintu/hf-speech-to-speech:
   demo/rtc/s2s-rtc-client.js, demo/ws/s2s-ws-client.js.
 - Rewrote README.md, and added this NOTICE file and media/voice-agent-ui.png.
 - Updated the authors, URLs, and license files in pyproject.toml.
+- Pinned Python 3.11 and replaced the retired macOS runner in
+  .github/workflows/ci.yml.
 - Removed logo.png and the Docker files (Dockerfile, Dockerfile.arm64,
   docker-compose.yml, .dockerignore, demo/Dockerfile, demo/.dockerignore),
   along with the Docker and Hugging Face Space setup in demo/README.md.

@@ -132,7 +132,7 @@ The picker lists Qwen3-TTS speakers. On the Mac, each one plays a British Englis
 
 ## Linux or WSL2 with an NVIDIA GPU
 
-This stack comes from [gkintu/hf-speech-to-speech](https://github.com/gkintu/hf-speech-to-speech), whose author tested it on Ubuntu under WSL2 with an RTX 5060 Ti. You need `uv`, `curl`, and a CUDA build of [`llama.cpp`](https://github.com/ggml-org/llama.cpp) with `llama-server` on your `PATH`.
+This stack comes from [gkintu/hf-speech-to-speech](https://github.com/gkintu/hf-speech-to-speech), whose author tested it on Ubuntu under WSL2 with an RTX 5060 Ti. You need Ubuntu 24.04 or newer (glibc 2.39), `uv`, `curl`, and a CUDA build of [`llama.cpp`](https://github.com/ggml-org/llama.cpp) with `llama-server` on your `PATH`.
 
 <details>
 <summary><strong>Setup steps</strong></summary>
@@ -142,7 +142,7 @@ Clone the repository and install it:
 ```bash
 git clone https://github.com/SURISURENDRA18/Speech-to-Speech-Voice-Model.git
 cd Speech-to-Speech-Voice-Model
-uv sync
+uv sync --python 3.11
 ```
 
 Download the models. Parakeet downloads itself on first use.
@@ -243,7 +243,7 @@ More detail: [speech to text](./src/speech_to_speech/STT/README.md) · [language
 ## Development
 
 ```bash
-uv sync --group dev
+uv sync --python 3.11 --group dev
 uv run pytest
 uv run ruff check src/ tests/
 uv run mypy src/
