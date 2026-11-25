@@ -31,7 +31,6 @@ backend, speaking the OpenAI Realtime **GA** protocol over **WebSocket**
 2. **Start this app**, pointing it at the backend with `SPEECH_TO_SPEECH_URL`:
 
    ```bash
-   uv pip install -r demo/requirements.txt
    export SPEECH_TO_SPEECH_URL=ws://localhost:8765/v1/realtime
    export SERPER_API_KEY=...   # optional; web search is disabled without it
    export STARTUP_GREETING=... # optional; empty disables the automatic greeting
