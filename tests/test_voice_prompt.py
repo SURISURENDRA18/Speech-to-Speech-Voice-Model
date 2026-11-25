@@ -180,7 +180,7 @@ def test_local_tool_parser_flushes_pending_batch_before_tool_with_empty_before_t
 
 def test_local_tool_parser_preserves_repeated_tool_blocks(monkeypatch):
     monkeypatch.setattr(
-        "speech_to_speech.LLM.language_model.sent_tokenize",
+        "speech_to_speech.LLM.language_model.split_sentences",
         lambda value: [value.strip()] if value.strip() else [],
     )
     handler = object.__new__(LanguageModelHandler)
@@ -210,7 +210,7 @@ def test_local_tool_parser_preserves_repeated_tool_blocks(monkeypatch):
 
 def test_local_tool_parser_preserves_interleaved_text_and_tool_calls(monkeypatch):
     monkeypatch.setattr(
-        "speech_to_speech.LLM.language_model.sent_tokenize",
+        "speech_to_speech.LLM.language_model.split_sentences",
         lambda value: [value.strip()] if value.strip() else [],
     )
     handler = object.__new__(LanguageModelHandler)

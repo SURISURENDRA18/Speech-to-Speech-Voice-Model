@@ -1,9 +1,11 @@
 import base64
 import io
 import re
+import unicodedata
 from typing import Optional
 
 import requests  # type: ignore[import-untyped]
+from nltk import sent_tokenize
 from PIL import Image
 
 SMART_PUNCT_TRANSLATION = str.maketrans(
@@ -15,18 +17,70 @@ SMART_PUNCT_TRANSLATION = str.maketrans(
     }
 )
 
+# Sentence terminators that NLTK's English Punkt model does not know: Devanagari danda and
+# double danda (shared by most Indic scripts), Urdu/Arabic full stop and question mark,
+# Ol Chiki (Santali) and Meetei Mayek (Manipuri).
+EXTRA_SENTENCE_TERMINATORS = "\u0964\u0965\u06d4\u061f\u1c7e\u1c7f\uabeb"
+
+# Arabic-script comma and semicolon, used in Urdu.
+_EXTRA_PUNCTUATION = "\u060c\u061b"
+
+# Characters that are not speakable by themselves. Python's ``\w`` excludes combining marks, so
+# matches still go through ``_keep_candidate`` before they are dropped.
 SPEECHABLE_PATTERN = re.compile(
-    r"[^\w\s.,!?;:'\"\-()\/\\@#%&*+=$€£¥₹₽¢\[\]{}<>~`^|…—–，。！？；：、\n\r\t]",
+    r"[^\w\s.,!?;:'\"\-()\/\\@#%&*+=$€£¥₹₽¢\[\]{}<>~`^|…—–，。！？；：、\n\r\t"
+    + EXTRA_SENTENCE_TERMINATORS
+    + _EXTRA_PUNCTUATION
+    + "]",
     flags=re.UNICODE,
 )
 
+# Zero-width (non-)joiner: they select letter forms in Indic scripts and Urdu.
+_JOINERS = "\u200c\u200d"
+
+_EXTRA_TERMINATOR_PATTERN = re.compile(rf"[{EXTRA_SENTENCE_TERMINATORS}]+[\"'”’)\]]*\s*")
+
+
+def _is_spoken_mark(char: str) -> bool:
+    """Whether ``char`` is a combining mark that carries sound, such as an Indic vowel sign."""
+    if "\ufe00" <= char <= "\ufe0f" or "\U000e0100" <= char <= "\U000e01ef":
+        return False  # Variation selectors only pick a glyph or emoji style.
+    return unicodedata.category(char) in ("Mn", "Mc")
+
+
+def _keep_candidate(match: re.Match[str]) -> str:
+    char = match.group()
+    if char in _JOINERS:
+        # Keep joiners inside words; drop the ones that glue emoji sequences together.
+        text, start = match.string, match.start()
+        neighbour = text[start - 1] if start > 0 else text[start + 1 : start + 2]
+        return char if neighbour and (neighbour.isalnum() or _is_spoken_mark(neighbour)) else ""
+    return char if _is_spoken_mark(char) else ""
+
 
 def remove_unspeechable(text: str) -> str:
-    """Keep only speechable characters: letters, digits, punctuation, whitespace.
-    support unicode characters (english, arabic, chinese, japanese, korean, etc.)
+    """Keep only speechable characters: letters, vowel signs, digits, punctuation, whitespace.
+    support unicode characters (english, arabic, chinese, japanese, korean, indic scripts, etc.)
     """
     text = text.translate(SMART_PUNCT_TRANSLATION)
-    return SPEECHABLE_PATTERN.sub("", text)
+    return SPEECHABLE_PATTERN.sub(_keep_candidate, text)
+
+
+def split_sentences(text: str) -> list[str]:
+    """Split text into sentences, including at terminators NLTK does not handle.
+
+    The last item may be an unfinished sentence, so it keeps its trailing whitespace: NLTK strips
+    it, which would glue the next streamed word onto the previous one.
+    """
+    sentences: list[str] = []
+    start = 0
+    for match in _EXTRA_TERMINATOR_PATTERN.finditer(text):
+        sentences.extend(sent_tokenize(text[start : match.end()]))
+        start = match.end()
+    sentences.extend(sent_tokenize(text[start:]))
+    if sentences:
+        sentences[-1] += text[len(text.rstrip()) :]
+    return sentences
 
 
 # Maps an STT language code to the language name used in the "Please reply ... in {name}"
