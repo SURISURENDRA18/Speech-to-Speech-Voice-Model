@@ -47,6 +47,7 @@ import logging
 import os
 from urllib.parse import urlsplit, urlunsplit
 
+import admin_auth
 import auth
 import httpx
 import limiter
@@ -113,6 +114,12 @@ DEFAULT_STARTUP_GREETING = (
 STARTUP_GREETING = os.environ.get("STARTUP_GREETING", DEFAULT_STARTUP_GREETING).strip()
 
 
+# Voices for the picker, as a comma-separated list. Empty keeps the Qwen3-TTS list in index.html.
+VOICES = [v.strip() for v in os.environ.get("S2S_VOICES", "").split(",") if v.strip()]
+# WebRTC media bypasses the reverse proxy, so deployments behind one can hide the option.
+WEBRTC_ENABLED = os.environ.get("S2S_WEBRTC", "1").strip() != "0"
+
+
 def _webrtc_calls_url(s2s_url: str) -> str:
     """Derive the WebRTC handshake URL from the pinned realtime URL.
 
@@ -139,6 +146,10 @@ app = FastAPI(title="s2s-demo")
 # Wire HF OAuth before the app serves (no-op unless the OAuth env is present).
 # Sign-in only matters when we're metering (prod Space), so gate it on that.
 AUTH_ENABLED = LIMITER_ENABLED and auth.attach(app)
+
+# Optional single-admin login for self-hosted deployments (off unless ADMIN_* is set).
+ADMIN = admin_auth.AdminAuth.from_env()
+admin_auth.attach(app, ADMIN)
 
 
 @app.on_event("startup")
@@ -182,7 +193,9 @@ def config():
         # WebRTC transport availability: the /api/calls proxy only forwards to
         # the env-pinned URL (never a client-supplied one), so the toggle is
         # offered exactly when that URL exists.
-        "rtc": bool(SPEECH_TO_SPEECH_URL),
+        "rtc": bool(SPEECH_TO_SPEECH_URL) and WEBRTC_ENABLED,
+        "voices": VOICES,
+        "adminLogin": ADMIN is not None,
         "iceServers": RTC_ICE_SERVERS,
         "startupGreeting": STARTUP_GREETING,
         "auth": AUTH_ENABLED,
@@ -285,7 +298,7 @@ async def calls(request: Request):
     Deliberately forwards ONLY to SPEECH_TO_SPEECH_URL: honouring a
     client-supplied target would make this an open proxy (SSRF). No env pin,
     no WebRTC — the client keeps such setups on the WebSocket transport."""
-    if not SPEECH_TO_SPEECH_URL:
+    if not SPEECH_TO_SPEECH_URL or not WEBRTC_ENABLED:
         raise HTTPException(status_code=404, detail="Not found.")
 
     offer = await request.body()

@@ -1,5 +1,5 @@
 // @ts-check
-// Modified by Surendra, 2026: removed the camera tool. See NOTICE.
+// Modified by Surendra, 2026: removed the camera tool; added deploy-defined voices and sign-out. See NOTICE.
 /**
  * Minimal voice conversation app, talking to a Hugging Face speech-to-speech
  * backend over **WebSocket** or **WebRTC**.
@@ -684,6 +684,22 @@ async function execWebSearch(query) {
   return lines.length > 1 ? lines.join("\n") : `${lines[0]}\nNo results found.`;
 }
 
+/** Replace the built-in voice list with the deploy's own voices.
+ * @param {string[]} voices */
+function setVoiceOptions(voices) {
+  inputVoice.replaceChildren(...voices.map((voice) => new Option(voice, voice)));
+  if (!voices.includes(settings.voice)) {
+    settings.voice = voices[0];
+    localStorage.setItem(STORAGE_KEYS.voice, settings.voice);
+  }
+  inputVoice.value = settings.voice;
+}
+
+/** Show the sign-out button when the deploy uses the admin login. */
+function showSignOut() {
+  $("#sign-out").hidden = false;
+}
+
 /** Learn server config (search key + connection target), then refresh the UI. */
 async function fetchConfig() {
   try {
@@ -699,6 +715,8 @@ async function fetchConfig() {
       // WebRTC transport: offered only when the deploy pins the URL (the
       // /api/calls proxy refuses to forward anywhere else).
       rtcAvailable = !!json.rtc;
+      if (Array.isArray(json.voices) && json.voices.length) setVoiceOptions(json.voices);
+      if (json.adminLogin) showSignOut();
       iceServers = Array.isArray(json.iceServers) ? json.iceServers : [];
       startupGreeting = typeof json.startupGreeting === "string"
         ? json.startupGreeting.trim()
