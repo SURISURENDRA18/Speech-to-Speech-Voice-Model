@@ -27,6 +27,13 @@ work remains with its authors.
    The direct base of this repository. Provides the Linux/NVIDIA local stack,
    including scripts/local_stack.sh, its configuration, and the voice picker.
 
+3. svara-tts-inference
+   Kenpath Technologies Pvt Ltd
+   https://github.com/Kenpath/svara-tts-inference
+   Licensed under the Apache License, Version 2.0.
+   src/speech_to_speech/TTS/svara_tts_handler.py follows its token layout, SNAC
+   decoding and sampling defaults.
+
 -------------------------------------------------------------------------------
 Changes made in this repository
 -------------------------------------------------------------------------------
@@ -52,6 +59,13 @@ Changes relative to gkintu/hf-speech-to-speech:
   src/speech_to_speech/STT/parakeet_tdt_handler.py.
 - Removed references to archive/ from scripts/benchmark_stt.py and
   src/speech_to_speech/TTS/README.md.
+- Added the Svara TTS backend, the admin login for the browser demo
+  (demo/admin_auth.py, demo/server.py, demo/main.js, demo/index.html), and the
+  server deployment in deploy/gcp/.
+- Added Svara, Whisper and public URL settings to scripts/local_stack.sh.
+- Changed language detection in
+  src/speech_to_speech/STT/whisper_stt_handler.py, and added Indian languages to
+  it and to src/speech_to_speech/LLM/utils.py.
 
 -------------------------------------------------------------------------------
 Models
