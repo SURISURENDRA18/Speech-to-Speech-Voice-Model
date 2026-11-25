@@ -48,6 +48,8 @@ Changes relative to gkintu/hf-speech-to-speech:
 - Removed unused upstream files: archive/, examples/, docs/assets/, the
   star-history chart with its workflow and script, and
   media/local-realtime-voice-agent.png.
+- Added a streaming handler check from huggingface/speech-to-speech to
+  src/speech_to_speech/STT/parakeet_tdt_handler.py.
 - Removed references to archive/ from scripts/benchmark_stt.py and
   src/speech_to_speech/TTS/README.md.
 
