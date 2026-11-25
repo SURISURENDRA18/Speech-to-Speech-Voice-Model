@@ -1,0 +1,27 @@
+# HTTPS front end. provision.sh replaces the domain.
+__DOMAIN__ {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy same-origin
+		Permissions-Policy "camera=(), geolocation=(), microphone=(self)"
+		-Server
+	}
+
+	# The Realtime server has no authentication, so the demo app checks the session first. Only this
+	# path is exposed; the server's other routes are not.
+	handle /v1/realtime {
+		forward_auth 127.0.0.1:7860 {
+			uri /auth/check
+			# Without this the check itself would look like a WebSocket request.
+			header_up -Connection
+			header_up -Upgrade
+		}
+		reverse_proxy 127.0.0.1:8765
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:7860
+	}
+}

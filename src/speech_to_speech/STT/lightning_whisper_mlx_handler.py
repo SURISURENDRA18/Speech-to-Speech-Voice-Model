@@ -45,6 +45,7 @@ class LightningWhisperSTTHandler(BaseSTTHandler):
         torch_dtype: str = "float16",
         compile_mode: Optional[str] = None,
         language: Optional[str] = None,
+        allowed_languages: Optional[str] = None,  # Shares its arguments with the Whisper handler, not used.
         gen_kwargs: dict[str, Any] = {},
     ) -> None:
         if len(model_name.split("/")) > 1:

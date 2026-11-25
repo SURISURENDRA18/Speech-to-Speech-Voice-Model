@@ -227,16 +227,19 @@ All of them listen on your own machine only by default. The Realtime server has 
 |---|---|
 | `--stt` | `parakeet-tdt`, `mlx-audio-whisper`, `whisper`, `whisper-mlx`, `faster-whisper`, `paraformer`, `none` |
 | `--llm_backend` | `mlx-lm`, `transformers`, `responses-api`, `chat-completions` |
-| `--tts` | `kokoro`, `qwen3`, `pocket`, `chatTTS`, `facebookMMS` |
+| `--tts` | `kokoro`, `qwen3`, `svara`, `pocket`, `chatTTS`, `facebookMMS` |
 
 Some need an extra, for example `uv sync --extra faster-whisper`. The extras are listed in [`pyproject.toml`](./pyproject.toml). `responses-api` and `chat-completions` connect to a server you choose, so they are local only if that server is.
 
 More detail: [speech to text](./src/speech_to_speech/STT/README.md) · [language models](./src/speech_to_speech/LLM/README.md) · [text to speech](./src/speech_to_speech/TTS/README.md) · [Realtime API](./src/speech_to_speech/api/openai_realtime/README.md) · [browser app](./demo/README.md)
 
+For Indian languages, set `S2S_STT=whisper` and `S2S_TTS=svara` in `.env` (see [`.env.example`](./.env.example)). To run it on a server with a login, see [`deploy/gcp`](./deploy/gcp/README.md).
+
 ## Project layout
 
 ```text
 ├── demo/                     Browser app
+├── deploy/gcp/               Server deployment on a GCP L4
 ├── scripts/
 │   ├── run_mac.py            Apple Silicon launcher
 │   ├── local_stack.sh        Linux / WSL2 launcher
@@ -294,6 +297,8 @@ Model weights are not included and have their own licenses:
 | [Kokoro 82M](https://huggingface.co/hexgrad/Kokoro-82M) | Apache 2.0 |
 | [Parakeet TDT 0.6B v3](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3) | CC BY 4.0 |
 | [Qwen3.5 4B GGUF](https://huggingface.co/unsloth/Qwen3.5-4B-GGUF) | Apache 2.0 |
+| [Svara TTS v1](https://huggingface.co/kenpath/svara-tts-v1) | Apache 2.0 |
+| [SNAC 24 kHz](https://huggingface.co/hubertsiuzdak/snac_24khz) | MIT |
 | [Qwen3-TTS 1.7B CustomVoice](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice) | Apache 2.0 |
 
 <p align="center">

@@ -1,0 +1,23 @@
+[Unit]
+Description=Speech-to-speech voice agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=s2s
+Group=s2s
+WorkingDirectory=/opt/s2s/app
+EnvironmentFile=/etc/s2s/stack.env
+EnvironmentFile=/etc/s2s/admin.env
+ExecStart=/opt/s2s/app/scripts/local_stack.sh run
+Restart=always
+RestartSec=10
+TimeoutStopSec=60
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/s2s
+
+[Install]
+WantedBy=multi-user.target
