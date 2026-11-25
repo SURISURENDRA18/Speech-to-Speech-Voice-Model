@@ -40,7 +40,14 @@ Changes relative to gkintu/hf-speech-to-speech:
   demo/rtc/s2s-rtc-client.js, demo/ws/s2s-ws-client.js.
 - Rewrote README.md, and added this NOTICE file and media/voice-agent-ui.png.
 - Updated the authors, URLs, and license files in pyproject.toml.
-- Removed logo.png.
+- Removed logo.png and the Docker files (Dockerfile, Dockerfile.arm64,
+  docker-compose.yml, .dockerignore, demo/Dockerfile, demo/.dockerignore),
+  along with the Docker and Hugging Face Space setup in demo/README.md.
+- Removed unused upstream files: archive/, examples/, docs/assets/, the
+  star-history chart with its workflow and script, and
+  media/local-realtime-voice-agent.png.
+- Removed references to archive/ from scripts/benchmark_stt.py and
+  src/speech_to_speech/TTS/README.md.
 
 -------------------------------------------------------------------------------
 Models
