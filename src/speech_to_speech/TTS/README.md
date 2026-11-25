@@ -10,6 +10,7 @@ Runtime-supported values in `s2s_pipeline.py`:
 - `facebookMMS` → `facebookmms_handler.py`
 - `pocket` → `pocket_tts_handler.py`
 - `kokoro` → `kokoro_handler.py`
+- `svara` → `svara_tts_handler.py`
 - `qwen3` → `qwen3_tts_handler.py`
 
 ## Usage
@@ -206,3 +207,27 @@ speech-to-speech local \
 ```
 
 `--tts pocket` and `--tts kokoro` are also valid options on macOS.
+
+### Svara (`--tts svara`)
+
+Primary args prefix: `--svara_tts_*`
+
+Speaks 18 Indian languages and Indian English with Kenpath's
+[svara-tts-v1](https://huggingface.co/kenpath/svara-tts-v1) (3B). The language of each sentence follows
+its script. Numbers, dates and currency are expanded with
+[indic-text-normalization](https://github.com/Kenpath/indic-text-normalization), which needs Linux and
+Python 3.12 or older; elsewhere, pass `--svara_tts_normalize False`.
+
+```bash
+uv sync --extra svara --group svara-normalization
+llama-server -m svara-tts-v1.Q4_K_M.gguf -ngl 99 -c 4096 -np 1 -fa on --port 8081 \
+  --backend-sampling --override-kv tokenizer.ggml.eos_token_id=int:128258
+speech-to-speech serve --tts svara --stt whisper --language auto ...
+```
+
+- Real time needs 82 tokens per second. An NVIDIA L4 reaches about 100 with Q4_K_M, and only with
+  `--backend-sampling`. Q5 and Q8 were measured without it (73 and 55).
+- Without the EOS override, generation runs past the end of speech.
+- Parakeet does not hear Indian languages, so use Whisper with it.
+- Compile a language's grammar ahead of time with
+  `python -m speech_to_speech.TTS.svara_text CACHE_DIR hi en`.

@@ -88,6 +88,9 @@ paraformer = [
 pocket = [
     "pocket-tts>=0.1.0",
 ]
+svara = [
+    "snac>=1.2.1",
+]
 webrtc = [
     "aiortc>=1.9.0",
 ]
@@ -113,12 +116,21 @@ dev = [
     "aiortc>=1.9.0",
 ]
 
+# Text normalization for Svara TTS. A group, not an extra, because the package is not on PyPI and
+# published metadata cannot point at a Git repository.
+svara-normalization = [
+    "indic-text-normalization; platform_system == 'Linux' and python_version < '3.13'",
+]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
 [tool.uv]
 package = true
 prerelease = "allow"
+
+[tool.uv.sources]
+indic-text-normalization = { git = "https://github.com/Kenpath/indic-text-normalization", rev = "00bc01659b281e54be62dd9cf3586cd7bba633ee" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
