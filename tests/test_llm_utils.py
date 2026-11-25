@@ -53,6 +53,20 @@ def test_remove_unspeechable_is_stable_across_stream_deltas() -> None:
     assert "".join(remove_unspeechable(char) for char in text) == text
 
 
+# Telugu ZWNJ, Bengali ZWJ, then emoji whose joiners must still be dropped. The joiners are
+# escaped because they are invisible in source.
+_JOINER_STREAM = "\u0c38\u0c3e\u0c2b\u0c4d\u200c\u0c1f\u0c4d \u09b0\u200d\u09cd\u09af\u09be\u09ae\U0001f468\u200d\U0001f469 ok\u2764\ufe0f\u200d\U0001f525"
+_JOINER_STREAM_SPOKEN = "\u0c38\u0c3e\u0c2b\u0c4d\u200c\u0c1f\u0c4d \u09b0\u200d\u09cd\u09af\u09be\u09ae ok"
+
+
+def test_remove_unspeechable_keeps_joiners_across_stream_deltas() -> None:
+    """Tokenizers emit a joiner as its own delta, so its neighbour is in the previous one."""
+    previous = ["", *_JOINER_STREAM]
+    spoken = "".join(remove_unspeechable(char, prev) for prev, char in zip(previous, _JOINER_STREAM))
+    assert spoken == _JOINER_STREAM_SPOKEN
+    assert remove_unspeechable(_JOINER_STREAM) == _JOINER_STREAM_SPOKEN
+
+
 @pytest.mark.parametrize("emoji", ["❤️", "1️⃣", "👨‍👩‍👧", "👍🏽"])
 def test_remove_unspeechable_leaves_no_invisible_emoji_parts(emoji) -> None:
     assert remove_unspeechable(f"हाँ {emoji} ठीक") in ("हाँ  ठीक", "हाँ 1 ठीक")

@@ -435,6 +435,7 @@ class BaseOpenAICompatibleHandler(BaseHandler[LLMIn, LLMOut], ABC):
     ) -> Generator[LLMOut, None, bool]:
         cancelled = False
         printable_text = ""
+        previous_char = ""
         sentence_batch: list[str] = []
 
         def _flush(batch: list[str]) -> Iterator[LLMOut]:
@@ -489,7 +490,8 @@ class BaseOpenAICompatibleHandler(BaseHandler[LLMIn, LLMOut], ABC):
                         state.output_emitted = True
                         yield self._chunk(turn, text=event.text)
                     continue
-                new_text = remove_unspeechable(event.text)
+                new_text = remove_unspeechable(event.text, previous_char)
+                previous_char = event.text[-1:] or previous_char
                 state.clean_text += new_text
                 printable_text += new_text
                 sentences = split_sentences(printable_text)

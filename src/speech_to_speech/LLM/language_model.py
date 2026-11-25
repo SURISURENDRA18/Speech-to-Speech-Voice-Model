@@ -507,8 +507,9 @@ class BaseLanguageModelHandler(BaseHandler[LLMIn, LLMOut], ABC):
                 break
 
             raw_text: str = token.text if hasattr(token, "text") else token
+            previous_char = ctx.raw_generated_text[-1:]
             ctx.raw_generated_text += raw_text
-            clean = raw_text if not wants_audio else remove_unspeechable(raw_text)
+            clean = raw_text if not wants_audio else remove_unspeechable(raw_text, previous_char)
             ctx.generated_text += clean
             ctx.printable_text += clean
             chunks, ctx.tools, ctx.printable_text = self._process_printable_text(

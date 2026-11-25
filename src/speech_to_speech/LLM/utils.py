@@ -26,7 +26,7 @@ EXTRA_SENTENCE_TERMINATORS = "\u0964\u0965\u06d4\u061f\u1c7e\u1c7f\uabeb"
 _EXTRA_PUNCTUATION = "\u060c\u061b"
 
 # Characters that are not speakable by themselves. Python's ``\w`` excludes combining marks, so
-# matches still go through ``_keep_candidate`` before they are dropped.
+# matches still go through ``remove_unspeechable``'s checks before they are dropped.
 SPEECHABLE_PATTERN = re.compile(
     r"[^\w\s.,!?;:'\"\-()\/\\@#%&*+=$€£¥₹₽¢\[\]{}<>~`^|…—–，。！？；：、\n\r\t"
     + EXTRA_SENTENCE_TERMINATORS
@@ -48,22 +48,24 @@ def _is_spoken_mark(char: str) -> bool:
     return unicodedata.category(char) in ("Mn", "Mc")
 
 
-def _keep_candidate(match: re.Match[str]) -> str:
-    char = match.group()
-    if char in _JOINERS:
-        # Keep joiners inside words; drop the ones that glue emoji sequences together.
-        text, start = match.string, match.start()
-        neighbour = text[start - 1] if start > 0 else text[start + 1 : start + 2]
-        return char if neighbour and (neighbour.isalnum() or _is_spoken_mark(neighbour)) else ""
-    return char if _is_spoken_mark(char) else ""
-
-
-def remove_unspeechable(text: str) -> str:
+def remove_unspeechable(text: str, previous_char: str = "") -> str:
     """Keep only speechable characters: letters, vowel signs, digits, punctuation, whitespace.
     support unicode characters (english, arabic, chinese, japanese, korean, indic scripts, etc.)
+
+    When cleaning a stream delta by delta, pass the last raw (uncleaned) character before ``text``
+    as ``previous_char``, so that a joiner at the start of a delta can be judged by its neighbour.
     """
     text = text.translate(SMART_PUNCT_TRANSLATION)
-    return SPEECHABLE_PATTERN.sub(_keep_candidate, text)
+
+    def keep_candidate(match: re.Match[str]) -> str:
+        char = match.group()
+        if char in _JOINERS:
+            # Keep joiners inside words; drop the ones that glue emoji sequences together.
+            neighbour = text[match.start() - 1] if match.start() > 0 else previous_char
+            return char if neighbour and (neighbour.isalnum() or _is_spoken_mark(neighbour)) else ""
+        return char if _is_spoken_mark(char) else ""
+
+    return SPEECHABLE_PATTERN.sub(keep_candidate, text)
 
 
 def split_sentences(text: str) -> list[str]:
