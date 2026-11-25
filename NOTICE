@@ -38,7 +38,7 @@ Changes relative to gkintu/hf-speech-to-speech:
   links, and About panel. Files changed: demo/CONTEXT.md, demo/README.md,
   demo/index.html, demo/main.js, demo/style.css, demo/ui/chat.js,
   demo/rtc/s2s-rtc-client.js, demo/ws/s2s-ws-client.js.
-- Rewrote README.md, and added this NOTICE file and media/voice-agent-ui.png.
+- Rewrote README.md, and added this NOTICE file and the images in media/.
 - Updated the authors, URLs, and license files in pyproject.toml.
 - Pinned Python 3.11 and replaced the retired macOS runner in
   .github/workflows/ci.yml.

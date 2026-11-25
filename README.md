@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./media/hero.svg" width="100%" alt="A glowing orb cycling through listening, thinking, and speaking">
+
 # Local Realtime Voice Agent
 
 **Talk to an AI that runs entirely on your own computer. No cloud and no API keys.**
@@ -10,35 +12,53 @@
 [![OpenAI Realtime compatible](https://img.shields.io/badge/API-OpenAI%20Realtime-10A37F)](./src/speech_to_speech/api/openai_realtime/README.md)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
 
-<img src="./media/voice-agent-ui.png" alt="The browser interface: a purple orb labelled Tap to start, with a voice picker below it" width="860">
+[Demo](#demo) · [Features](#features) · [How it works](#how-it-works) · [Quick start](#quick-start-apple-silicon-mac) · [Troubleshooting](#troubleshooting) · [License](#license)
 
 </div>
 
 You speak into the browser. A local model transcribes your voice, a second one writes the reply, and a third speaks it back. You can interrupt it mid-sentence.
 
-This project adds an Apple Silicon launcher to Hugging Face's [speech-to-speech](https://github.com/huggingface/speech-to-speech) pipeline, tuned for a Mac with **8 GB of memory**. The Linux/NVIDIA stack from [gkintu/hf-speech-to-speech](https://github.com/gkintu/hf-speech-to-speech) is included too.
+This project adds an Apple Silicon launcher to Hugging Face's [speech-to-speech](https://github.com/huggingface/speech-to-speech) pipeline, tuned for a Mac with **8 GB of memory**.
+
+## Demo
+
+<p align="center">
+  <picture>
+    <source media="(prefers-reduced-motion: reduce)" srcset="./media/voice-agent-ui.png">
+    <img src="./media/demo.webp" width="100%" alt="Screen recording: the orb listens to the question Why is the sky blue, turns amber while thinking, then turns violet and speaks the answer as it appears on screen">
+  </picture>
+</p>
+
+<p align="center"><sub>Recorded in real time on an M2 Mac with 8 GB of memory. The question was played in by a synthesized voice, and the recording has no sound.</sub></p>
 
 ## Features
 
-- **Local inference.** Speech recognition, the language model, and speech synthesis all run on your machine. Models are downloaded once and cached.
-- **Natural turn-taking.** Smart Turn tells a finished sentence from a pause, and you can talk over the assistant to stop it.
-- **Voice picker.** Pick from nine voice options in the browser.
-- **Standard API.** The server speaks the OpenAI Realtime protocol over WebSocket, with optional WebRTC.
-- **Swappable parts.** Change the speech, language, or voice backend with a command-line flag.
-- **Optional web search.** Off unless you provide a [Serper](https://serper.dev) key. Search queries leave your machine when it is on.
+<table>
+  <tr>
+    <td width="10%" align="center"><img src="./media/icons/local.svg" width="48" alt=""></td>
+    <td width="40%"><strong>Local inference</strong><br>Speech recognition, the language model, and speech synthesis all run on your machine. Models are downloaded once and cached.</td>
+    <td width="10%" align="center"><img src="./media/icons/turns.svg" width="48" alt=""></td>
+    <td width="40%"><strong>Natural turn-taking</strong><br>Smart Turn tells a finished sentence from a pause, and you can talk over the assistant to stop it.</td>
+  </tr>
+  <tr>
+    <td width="10%" align="center"><img src="./media/icons/voices.svg" width="48" alt=""></td>
+    <td width="40%"><strong>Voice picker</strong><br>Pick from nine voice options in the browser.</td>
+    <td width="10%" align="center"><img src="./media/icons/api.svg" width="48" alt=""></td>
+    <td width="40%"><strong>Standard API</strong><br>The server speaks the OpenAI Realtime protocol over WebSocket, with optional WebRTC.</td>
+  </tr>
+  <tr>
+    <td width="10%" align="center"><img src="./media/icons/swap.svg" width="48" alt=""></td>
+    <td width="40%"><strong>Swappable parts</strong><br>Change the speech, language, or voice backend with a command-line flag.</td>
+    <td width="10%" align="center"><img src="./media/icons/search.svg" width="48" alt=""></td>
+    <td width="40%"><strong>Optional web search</strong><br>Off unless you provide a <a href="https://serper.dev">Serper</a> key. Search queries leave your machine when it is on.</td>
+  </tr>
+</table>
 
 ## How it works
 
-```mermaid
-flowchart LR
-    A[Browser microphone] --> B[Realtime API]
-    B --> C[Silero VAD]
-    C --> D[Smart Turn v3.2]
-    D --> E[Speech to text]
-    E --> F[Language model]
-    F --> G[Text to speech]
-    G --> H[Browser speaker]
-```
+<p align="center">
+  <img src="./media/pipeline.svg" width="100%" alt="The Mac pipeline: microphone, Realtime API, Silero VAD detects speech, Smart Turn decides you have finished, Whisper transcribes, Qwen3 writes the reply, Kokoro speaks it, speaker">
+</p>
 
 Each stage runs in its own thread and passes work along through queues.
 
@@ -73,10 +93,13 @@ The last command installs the English language data that Kokoro needs. Run it ag
 .venv/bin/python scripts/run_mac.py serve \
   --stt mlx-audio-whisper \
   --mlx_audio_whisper_model_name mlx-community/whisper-large-v3-turbo-asr-8bit \
+  --enable_live_transcription False \
   --llm_backend mlx-lm \
   --model_name mlx-community/Qwen3-1.7B-4bit \
   --tts kokoro
 ```
+
+Keep `--enable_live_transcription False`. Live transcription works only with Parakeet, and leaving it on with Whisper cuts off the end of your sentences.
 
 The first run downloads the models. Wait for `Uvicorn running on http://127.0.0.1:8765`.
 
@@ -235,6 +258,7 @@ More detail: [speech to text](./src/speech_to_speech/STT/README.md) · [language
 | Problem | Fix |
 |---|---|
 | Kokoro fails with `No module named pip` or an `en_core_web_sm` error | Run the `uv pip install` command from step 1 again |
+| The end of your sentence is missing | Start the pipeline with `--enable_live_transcription False` |
 | The browser never asks for the microphone | Use `http://localhost:7860`. Browsers block the microphone on plain `http://` addresses other than localhost |
 | The orb does not connect | Check that the pipeline is running and that `SPEECH_TO_SPEECH_URL` uses the same port |
 | Replies are slow on an 8 GB Mac | Close other large apps, or try `--model_name mlx-community/Qwen3-0.6B-4bit` |
@@ -271,3 +295,7 @@ Model weights are not included and have their own licenses:
 | [Parakeet TDT 0.6B v3](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3) | CC BY 4.0 |
 | [Qwen3.5 4B GGUF](https://huggingface.co/unsloth/Qwen3.5-4B-GGUF) | Apache 2.0 |
 | [Qwen3-TTS 1.7B CustomVoice](https://huggingface.co/Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice) | Apache 2.0 |
+
+<p align="center">
+  <img src="./media/footer.svg" width="100%" alt="">
+</p>
