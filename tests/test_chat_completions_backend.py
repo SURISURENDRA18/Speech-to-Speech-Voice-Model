@@ -625,6 +625,17 @@ def test_tools_converted_to_chat_format_on_request():
     assert captured["stream_options"] == {"include_usage": True}
 
 
+def test_streaming_keeps_joiners_that_arrive_as_their_own_delta():
+    """Empty deltas in between must not lose the neighbour the joiner belongs to."""
+    h = _make_handler(stream=True)
+    # Escaped because the joiners are invisible in source.
+    raw = "\u0c38\u0c3e\u0c2b\u0c4d\u200c\u0c1f\u0c4d \u0c39\u0c3e\U0001f468\u200d\U0001f469"
+    deltas = [delta for char in raw for delta in (char, "")]
+    h.client.chat.completions.create = lambda **k: _FakeStream([_chunk(content=delta) for delta in deltas])
+    text, *_ = _drive(h)
+    assert text.strip() == "\u0c38\u0c3e\u0c2b\u0c4d\u200c\u0c1f\u0c4d \u0c39\u0c3e"
+
+
 # ── Text-only (output_modalities=["text"]) ────────────────────────────────────
 
 

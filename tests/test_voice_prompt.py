@@ -180,7 +180,7 @@ def test_local_tool_parser_flushes_pending_batch_before_tool_with_empty_before_t
 
 def test_local_tool_parser_preserves_repeated_tool_blocks(monkeypatch):
     monkeypatch.setattr(
-        "speech_to_speech.LLM.language_model.sent_tokenize",
+        "speech_to_speech.LLM.language_model.split_sentences",
         lambda value: [value.strip()] if value.strip() else [],
     )
     handler = object.__new__(LanguageModelHandler)
@@ -210,7 +210,7 @@ def test_local_tool_parser_preserves_repeated_tool_blocks(monkeypatch):
 
 def test_local_tool_parser_preserves_interleaved_text_and_tool_calls(monkeypatch):
     monkeypatch.setattr(
-        "speech_to_speech.LLM.language_model.sent_tokenize",
+        "speech_to_speech.LLM.language_model.split_sentences",
         lambda value: [value.strip()] if value.strip() else [],
     )
     handler = object.__new__(LanguageModelHandler)
@@ -250,6 +250,21 @@ def test_local_text_only_with_tools_preserves_plain_text_verbatim():
 
     assert "".join(chunk.text for chunk in chunks) == raw
     assert ctx.printable_text == ""
+
+
+def test_local_audio_stream_keeps_joiners_that_arrive_as_their_own_token():
+    handler = object.__new__(LanguageModelHandler)
+    handler.cancel_scope = None
+    handler.speculative_turns = None
+    handler.stop_event = Event()
+    handler.stream_batch_sentences = 3
+    ctx = _stream_context("lookup")
+    # Escaped because the joiners are invisible in source.
+    raw = "\u0c38\u0c3e\u0c2b\u0c4d\u200c\u0c1f\u0c4d \u0c39\u0c3e\U0001f468\u200d\U0001f469"
+
+    list(handler._stream_tokens(iter(raw), None, None, ctx))
+
+    assert ctx.generated_text == "\u0c38\u0c3e\u0c2b\u0c4d\u200c\u0c1f\u0c4d \u0c39\u0c3e"
 
 
 def test_local_text_only_tool_marker_can_span_tokens_without_losing_whitespace():

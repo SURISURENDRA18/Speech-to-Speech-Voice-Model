@@ -8,7 +8,6 @@ from threading import Lock, Thread
 from typing import Any, Literal, Optional, Protocol, runtime_checkable
 
 import torch
-from nltk import sent_tokenize
 from openai.types.realtime.realtime_conversation_item_assistant_message import (
     RealtimeConversationItemAssistantMessage,
 )
@@ -47,7 +46,7 @@ from speech_to_speech.LLM.text_prompt import build_text_system_prompt
 from speech_to_speech.LLM.tool_call.function_call import extract_function_calls_from_text
 from speech_to_speech.LLM.tool_call.function_tool import FunctionTool
 from speech_to_speech.LLM.tool_call.tool_prompt import END_CODE, ENTER_CODE, build_block_regex, build_tool_system_prompt
-from speech_to_speech.LLM.utils import image_url_to_pil, remove_unspeechable, resolve_auto_language
+from speech_to_speech.LLM.utils import image_url_to_pil, remove_unspeechable, resolve_auto_language, split_sentences
 from speech_to_speech.LLM.voice_prompt import build_voice_system_prompt
 from speech_to_speech.pipeline.cancel_scope import CancelScope
 from speech_to_speech.pipeline.handler_types import LLMIn, LLMOut
@@ -338,7 +337,7 @@ class BaseLanguageModelHandler(BaseHandler[LLMIn, LLMOut], ABC):
             if text_only and before:
                 chunks.append(text_chunk(before))
             elif before.strip():
-                for s in sent_tokenize(before):
+                for s in split_sentences(before.rstrip()):
                     ctx.sentence_batch.append(s)
             if ctx.sentence_batch:
                 chunks.append(text_chunk(" ".join(ctx.sentence_batch)))
@@ -391,7 +390,7 @@ class BaseLanguageModelHandler(BaseHandler[LLMIn, LLMOut], ABC):
             return chunks, tools, pending_marker
 
         if printable_text:
-            sentences = sent_tokenize(printable_text)
+            sentences = split_sentences(printable_text)
             if len(sentences) > 1:
                 for s in sentences[:-1]:
                     ctx.sentence_batch.append(s)
@@ -508,8 +507,9 @@ class BaseLanguageModelHandler(BaseHandler[LLMIn, LLMOut], ABC):
                 break
 
             raw_text: str = token.text if hasattr(token, "text") else token
+            previous_char = ctx.raw_generated_text[-1:]
             ctx.raw_generated_text += raw_text
-            clean = raw_text if not wants_audio else remove_unspeechable(raw_text)
+            clean = raw_text if not wants_audio else remove_unspeechable(raw_text, previous_char)
             ctx.generated_text += clean
             ctx.printable_text += clean
             chunks, ctx.tools, ctx.printable_text = self._process_printable_text(
