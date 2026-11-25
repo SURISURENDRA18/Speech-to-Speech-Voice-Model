@@ -24,6 +24,13 @@ class WhisperSTTHandlerArguments:
             "help": "Compile mode for torch compile. Either 'default', 'reduce-overhead' and 'max-autotune'. Default is None (no compilation)"
         },
     )
+    stt_allowed_languages: Optional[str] = field(
+        default=None,
+        metadata={
+            "help": "Comma-separated languages to choose from when '--language auto' detects the spoken language, "
+            "such as 'hi,en,ta'. Default is every language the handler supports."
+        },
+    )
     stt_gen_max_new_tokens: int = field(
         default=128,
         metadata={"help": "The maximum number of new tokens to generate. Default is 128."},

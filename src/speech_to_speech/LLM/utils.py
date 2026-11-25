@@ -123,6 +123,18 @@ WHISPER_LANGUAGE_TO_LLM_LANGUAGE = {
     "et": "estonian",
     "lv": "latvian",
     "lt": "lithuanian",
+    # Indian languages that both Whisper and Svara TTS support (Hindi is above).
+    "as": "assamese",
+    "bn": "bengali",
+    "gu": "gujarati",
+    "kn": "kannada",
+    "ml": "malayalam",
+    "mr": "marathi",
+    "ne": "nepali",
+    "pa": "punjabi",
+    "sa": "sanskrit",
+    "ta": "tamil",
+    "te": "telugu",
 }
 
 

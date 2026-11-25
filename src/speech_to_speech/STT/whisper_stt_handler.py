@@ -29,6 +29,17 @@ SUPPORTED_LANGUAGES = [
     "pl",
     "it",
     "nl",
+    "as",
+    "bn",
+    "gu",
+    "kn",
+    "ml",
+    "mr",
+    "ne",
+    "pa",
+    "sa",
+    "ta",
+    "te",
 ]
 
 
@@ -44,6 +55,7 @@ class WhisperSTTHandler(BaseSTTHandler):
         torch_dtype: str = "float16",
         compile_mode: Optional[str] = None,
         language: Optional[str] = None,
+        allowed_languages: Optional[str] = None,
         gen_kwargs: dict[str, Any] = {},
     ) -> None:
         self.device = device
@@ -54,6 +66,13 @@ class WhisperSTTHandler(BaseSTTHandler):
         self.last_language = language if language != "auto" else None
         if self.last_language is not None:
             self.gen_kwargs["language"] = self.last_language
+
+        self.allowed_languages = SUPPORTED_LANGUAGES
+        if allowed_languages:
+            self.allowed_languages = [code.strip() for code in allowed_languages.split(",") if code.strip()]
+            unknown = [code for code in self.allowed_languages if code not in SUPPORTED_LANGUAGES]
+            if unknown or not self.allowed_languages:
+                raise ValueError(f"Unsupported Whisper languages {unknown}; choose from {SUPPORTED_LANGUAGES}.")
 
         self.processor = AutoProcessor.from_pretrained(model_name)
         self.model = AutoModelForSpeechSeq2Seq.from_pretrained(
@@ -112,30 +131,43 @@ class WhisperSTTHandler(BaseSTTHandler):
                 f"{self.__class__.__name__}:  warmed up! time: {start_event.elapsed_time(end_event) * 1e-3:.3f} s"
             )
 
+    def _detect_language(self, input_features: torch.Tensor) -> Optional[str]:
+        """Return the most likely of the allowed languages, or None for English-only models.
+
+        Recent transformers versions no longer return the language token from ``generate``, so it is
+        read from the model directly. Limiting the choice also stops short or accented speech from
+        being taken for an unrelated language.
+        """
+        lang_to_id = getattr(self.model.generation_config, "lang_to_id", None)
+        if not lang_to_id:
+            return None
+        ids = {code: lang_to_id[f"<|{code}|>"] for code in self.allowed_languages if f"<|{code}|>" in lang_to_id}
+        if not ids:
+            return None
+        start = torch.tensor([[self.model.generation_config.decoder_start_token_id]], device=input_features.device)
+        with torch.no_grad():
+            logits = self.model(input_features=input_features, decoder_input_ids=start).logits[0, -1]
+        return max(ids, key=lambda code: float(logits[ids[code]]))
+
     def process(self, vad_audio: STTIn) -> Iterator[STTOut]:
         logger.debug("infering whisper...")
 
         input_features = self.prepare_model_inputs(vad_audio.audio)
-        pred_ids = self.model.generate(input_features, **self.gen_kwargs)
-        language_code = self.processor.tokenizer.decode(pred_ids[0, 1])[2:-2]  # remove "<|" and "|>"
-
-        if language_code not in SUPPORTED_LANGUAGES:  # reprocess with the last language
-            logger.warning("Whisper detected unsupported language: %s", language_code)
-            gen_kwargs = copy(self.gen_kwargs)
-            gen_kwargs["language"] = self.last_language
-            language_code = self.last_language
-            pred_ids = self.model.generate(input_features, **gen_kwargs)
-        else:
-            self.last_language = language_code
-
+        gen_kwargs = copy(self.gen_kwargs)
+        language_code = self.start_language if self.start_language != "auto" else None
+        if language_code is None:
+            language_code = self._detect_language(input_features)
+            if language_code is not None:
+                gen_kwargs["language"] = language_code
+                self.last_language = language_code
+        pred_ids = self.model.generate(input_features, **gen_kwargs)
         pred_text = self.processor.batch_decode(pred_ids, skip_special_tokens=True, decode_with_timestamps=False)[0]
-        language_code = self.processor.tokenizer.decode(pred_ids[0, 1])[2:-2]  # remove "<|" and "|>"
 
         logger.debug("finished whisper inference")
         console.print(f"[yellow]USER: {pred_text}")
         logger.debug(f"Language Code Whisper: {language_code}")
 
-        if self.start_language == "auto":
+        if self.start_language == "auto" and language_code is not None:
             language_code += "-auto"
 
         yield Transcription(
